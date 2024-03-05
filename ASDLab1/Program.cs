@@ -2,13 +2,23 @@
 
 namespace ASDLab1;
 
-class Program
+public enum AlgorithmChoice
+{
+    LinearSearch = 1,
+    BinarySearch,
+    GoldenRatioSearch,
+    BarrierSearch,
+    CompareAll,
+    Exit
+}
+
+public static class Program
 {
     private const string InvalidInputMessage = "Invalid input. Please enter a valid integer.";
     private const string AlgorithmChoicePrompt = "Choose an algorithm:";
     private const string NumberOfElementsPrompt = "Enter the number of elements in the array: ";
     private const string MaxValuePrompt = "Enter the maximum value of the elements in the array: ";
-
+    
     private static int GetInput(string prompt)
     {
         while (true)
@@ -23,13 +33,49 @@ class Program
         }
     }
 
-    private static void PerformAndTimeSearch(ArraySearcher searcher, Func<int, int> searchMethod, string methodName)
+    private static TimeResult PerformAndTimeSearch(Func<int, int> searchMethod, int target)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
-        Console.WriteLine(searchMethod(3));
+        var result = searchMethod(target);
         stopwatch.Stop();
-        Console.WriteLine($"Time taken by {methodName}: {stopwatch.Elapsed}");
+        return new TimeResult(result, stopwatch.Elapsed.TotalMilliseconds);
+    }
+    private static void PerformSearchAndDisplayTime(Searcher searcher, int target, AlgorithmChoice methodName)
+    {
+        Console.WriteLine($"{searcher.GetType().Name}:");
+        TimeResult result;
+        switch (methodName)
+        {
+            case AlgorithmChoice.LinearSearch:
+                result = PerformAndTimeSearch(searcher.LinearSearch, target);
+                Console.WriteLine($"Index: {result.Index}, Time: {result.Time}ms");
+                break;
+            case AlgorithmChoice.BinarySearch:
+                result = PerformAndTimeSearch(searcher.BinarySearch, target);
+                Console.WriteLine($"Index: {result.Index}, Time: {result.Time}ms");
+                break;
+            case AlgorithmChoice.GoldenRatioSearch:
+                result = PerformAndTimeSearch(searcher.GoldenRatioSearch, target);
+                Console.WriteLine($"Index: {result.Index}, Time: {result.Time}ms");
+                break;
+            case AlgorithmChoice.BarrierSearch:
+                result = PerformAndTimeSearch(searcher.BarrierSearch, target);
+                Console.WriteLine($"Index: {result.Index}, Time: {result.Time}ms");
+                break;
+
+            case AlgorithmChoice.CompareAll:
+                result = PerformAndTimeSearch(searcher.LinearSearch, target);
+                Console.WriteLine($"Linear Search: Index: {result.Index}, Time: {result.Time}ms");
+                result = PerformAndTimeSearch(searcher.BinarySearch, target);
+                Console.WriteLine($"Binary Search: Index: {result.Index}, Time: {result.Time}ms");
+                result = PerformAndTimeSearch(searcher.GoldenRatioSearch, target);
+                Console.WriteLine($"Golden Ratio Search: Index: {result.Index}, Time: {result.Time}ms");
+                result = PerformAndTimeSearch(searcher.BarrierSearch, target);
+                Console.WriteLine($"Barrier Search: Index: {result.Index}, Time: {result.Time}ms");
+                break;
+            
+        }
     }
 
     private static void DisplayMenu()
@@ -37,53 +83,59 @@ class Program
         Console.WriteLine(AlgorithmChoicePrompt);
         Console.WriteLine("1. Linear Search");
         Console.WriteLine("2. Binary Search");
-        Console.WriteLine("3. Jump Search");
-        Console.WriteLine("4. Interpolation Search");
+        Console.WriteLine("3. Golden Ratio Search");
+        Console.WriteLine("4. Barrier Search");
         Console.WriteLine("5. Compare all");
         Console.WriteLine("6. Exit");
     }
 
-    public static void Main(string[] args)
+    public static void Main()
     {
         var count = GetInput(NumberOfElementsPrompt);
         var maxValue = GetInput(MaxValuePrompt);
 
         var generator = new RandomNumberGenerator();
         var array = generator.GenerateNumbers(count, maxValue);
-        var searcher = new ArraySearcher(array);
-
-        while (true)
+        
+        if (array == null)
         {
+            Console.WriteLine("Failed to generate array. Exiting...");
+            return;
+        }
+        var arraySearcher = new ArraySearcher(array);
+        
+        var myList = new NodeList();
+        foreach (var num in array)
+        {
+            myList.Add(num);
+        }
+        
+        var nodeListSearcher = new NodeListSearcher(myList);
+        
+        var continueCalculations = true;
+        while (continueCalculations)
+        {
+            PrintArray(array);
             DisplayMenu();
-
-            var choice = Console.ReadLine();
-
-            switch (choice)
+            var choice = (AlgorithmChoice) GetInput(AlgorithmChoicePrompt);
+            if (choice == AlgorithmChoice.Exit)
             {
-                case "1":
-                    PerformAndTimeSearch(searcher, searcher.LinearSearch, "LinearSearch");
-                    break;
-                case "2":
-                    PerformAndTimeSearch(searcher, searcher.BinarySearch, "BinarySearch");
-                    break;
-                case "3":
-                    PerformAndTimeSearch(searcher, searcher.JumpSearch, "JumpSearch");
-                    break;
-                case "4":
-                    PerformAndTimeSearch(searcher, searcher.InterpolationSearch, "InterpolationSearch");
-                    break;
-                case "5":
-                    PerformAndTimeSearch(searcher, searcher.LinearSearch, "LinearSearch");
-                    PerformAndTimeSearch(searcher, searcher.BinarySearch, "BinarySearch");
-                    PerformAndTimeSearch(searcher, searcher.JumpSearch, "JumpSearch");
-                    PerformAndTimeSearch(searcher, searcher.InterpolationSearch, "InterpolationSearch");
-                    break;
-                case "6":
-                    return;
-                default:
-                    Console.WriteLine("Invalid choice. Please enter a number between 1 and 6.");
-                    break;
+                return;
             }
+            var target = GetInput("Enter the target value: ");
+            
+            PerformSearchAndDisplayTime(arraySearcher, target, choice);
+            PerformSearchAndDisplayTime(nodeListSearcher, target, choice);
+            
+            Console.WriteLine("Continue calculations? (y/n)");
+            continueCalculations = Console.ReadLine()?.ToLower() == "y";
         }
     }
+    private static void PrintArray(IEnumerable<int> array)
+    {
+        Console.WriteLine($"[{string.Join(", ", array)}]");
+    }
+
 }
+
+public record TimeResult(int Index, double Time);

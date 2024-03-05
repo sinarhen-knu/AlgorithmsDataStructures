@@ -1,39 +1,41 @@
 ﻿namespace ASDLab1;
 
-public class ArraySearcher
+public class ArraySearcher : Searcher
 {
     private readonly int[] _array;
-    
+
     public ArraySearcher(int[] array)
     {
         _array = array;
     }
-    
-    public int LinearSearch(int number)
+
+
+    public override int LinearSearch(int target)
     {
         for (var i = 0; i < _array.Length; i++)
         {
-            if (_array[i] == number)
+            if (_array[i] == target)
             {
                 return i;
             }
         }
         return -1;
     }
-    
-    public int BinarySearch(int number)
+
+    public override int BinarySearch(int target)
     {
+        Array.Sort(_array);
         var left = 0;
         var right = _array.Length - 1;
         while (left <= right)
         {
             var middle = (left + right) / 2;
-            if (_array[middle] == number)
+            if (_array[middle] == target)
             {
                 return middle;
             }
-            
-            if (_array[middle] < number)
+
+            if (_array[middle] < target)
             {
                 left = middle + 1;
             }
@@ -42,58 +44,29 @@ public class ArraySearcher
                 right = middle - 1;
             }
         }
+
         return -1;
+
     }
-    
-    public int JumpSearch(int number)
+
+    public override int GoldenRatioSearch(int target)
     {
-        var step = (int)Math.Floor(Math.Sqrt(_array.Length));
-        var prev = 0;
-        while (_array[Math.Min(step, _array.Length) - 1] < number)
+        Array.Sort(_array);
+        int left = 0, right = _array.Length - 1;
+        while (left <= right)
         {
-            prev = step;
-            step += (int)Math.Floor(Math.Sqrt(_array.Length));
-            if (prev >= _array.Length)
-            {
-                return -1;
-            }
-        }
-        while (_array[prev] < number)
-        {
-            prev++;
-            if (prev == Math.Min(step, _array.Length))
-            {
-                return -1;
-            }
-        }
-        if (_array[prev] == number)
-        {
-            return prev;
-        }
-        return -1;
-    }
-    
-    public int InterpolationSearch(int number)
-    {
-        var left = 0;
-        var right = _array.Length - 1;
-        while (left <= right && number >= _array[left] && number <= _array[right])
-        {
-            var pos = left + ((number - _array[left]) * (right - left) / (_array[right] - _array[left]));
-            if (_array[pos] == number)
-            {
-                return pos;
-            }
-            if (_array[pos] < number)
-            {
-                left = pos + 1;
-            }
-            else
-            {
-                right = pos - 1;
-            }
+            var mid = Convert.ToInt32((right - left) / 1.618 + left);
+            if (_array[mid] == target) return mid;
+            if (_array[mid] < target) left = mid + 1;
+            else right = mid - 1;
         }
         return -1;
     }
 
+    public override int BarrierSearch(int target)
+    {
+        var i = 0;
+        for(; _array[i] != target; i++) { }
+        return i;
+    }
 }
