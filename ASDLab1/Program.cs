@@ -2,16 +2,6 @@
 
 namespace ASDLab1;
 
-public enum AlgorithmChoice
-{
-    LinearSearch = 1,
-    BinarySearch,
-    GoldenRatioSearch,
-    BarrierSearch,
-    CompareAll,
-    Exit
-}
-
 public static class Program
 {
     private const string InvalidInputMessage = "Invalid input. Please enter a valid integer.";
@@ -95,21 +85,17 @@ public static class Program
         var maxValue = GetInput(MaxValuePrompt);
 
         var generator = new RandomNumberGenerator();
+        
         var array = generator.GenerateNumbers(count, maxValue);
+        Array.Sort(array);
         
-        if (array == null)
-        {
-            Console.WriteLine("Failed to generate array. Exiting...");
-            return;
-        }
         var arraySearcher = new ArraySearcher(array);
-        
+    
         var myList = new NodeList();
         foreach (var num in array)
         {
             myList.Add(num);
         }
-        
         var nodeListSearcher = new NodeListSearcher(myList);
         
         var continueCalculations = true;
@@ -137,5 +123,3 @@ public static class Program
     }
 
 }
-
-public record TimeResult(int Index, double Time);

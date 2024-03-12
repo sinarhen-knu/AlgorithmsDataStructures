@@ -24,7 +24,6 @@ public class ArraySearcher : Searcher
 
     public override int BinarySearch(int target)
     {
-        Array.Sort(_array);
         var left = 0;
         var right = _array.Length - 1;
         while (left <= right)
@@ -51,7 +50,6 @@ public class ArraySearcher : Searcher
 
     public override int GoldenRatioSearch(int target)
     {
-        Array.Sort(_array);
         int left = 0, right = _array.Length - 1;
         while (left <= right)
         {
